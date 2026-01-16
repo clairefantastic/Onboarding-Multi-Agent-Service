@@ -6,3 +6,6 @@ langchain-openai
 langchain-core
 openai
 python-dotenv
+pytest
+pytest-asyncio
+pytest-cov
