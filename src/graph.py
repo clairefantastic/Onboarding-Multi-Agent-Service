@@ -89,7 +89,7 @@ def process_onboarding(input_data: OnboardingInput) -> OnboardingResponse:
 
 
 # ============================================================================
-# ASYNC GRAPH PROCESSING (Better performance, non-blocking)
+# ASYNC GRAPH PROCESSING 
 # ============================================================================
 
 def create_onboarding_graph_async():
