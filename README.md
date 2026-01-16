@@ -66,13 +66,6 @@ curl -X POST http://localhost:8000/analyze \
   -d @test_invalid_short.json
 ```
 
-**Long answer:**
-```bash
-curl -X POST http://localhost:8000/analyze \
-  -H "Content-Type: application/json" \
-  -d @test_long_answer.json
-```
-
 ### Check Health
 ```bash
 curl http://localhost:8000/
