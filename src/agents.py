@@ -21,7 +21,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# Initialize OpenAI client (sync - kept for compatibility)
+# Initialize OpenAI client 
 def get_llm():
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
@@ -248,7 +248,7 @@ Analyze this Q&A pair and provide 2-3 trait scores with reasoning."""
 
 
 # ============================================================================
-# ASYNC AGENTS (Non-blocking, better performance)
+# ASYNC AGENTS 
 # ============================================================================
 
 async def insight_agent_async(state: GraphState) -> dict:

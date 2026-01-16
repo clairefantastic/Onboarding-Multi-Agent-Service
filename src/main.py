@@ -7,9 +7,7 @@ from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
 from dotenv import load_dotenv
 from src.models import OnboardingInput, OnboardingResponse
-from src.graph import process_onboarding, process_onboarding_async
-from src.rate_limiter import rate_limit_middleware, rate_limiter
-from src.cache import analysis_cache
+from src.graph import process_onboarding_async
 
 # Configure logging
 logging.basicConfig(
@@ -31,12 +29,8 @@ logger.info("Starting Onboarding Multi-Agent Service")
 app = FastAPI(
     title="Onboarding Multi-Agent Service",
     description="Process onboarding Q&A through parallel LLM agents",
-    version="2.0.0"  # Updated version with async + rate limiting + caching
+    version="1.0.0"
 )
-
-
-# Add rate limiting middleware
-app.middleware("http")(rate_limit_middleware)
 
 
 @app.middleware("http")
@@ -80,7 +74,7 @@ def root():
 @app.post("/analyze", response_model=OnboardingResponse)
 async def analyze_onboarding(input_data: OnboardingInput):
     """
-    Analyze an onboarding Q&A pair through parallel agents (with caching)
+    Analyze an onboarding Q&A pair through parallel agents
     
     Args:
         input_data: OnboardingInput with user_id, question, and answer
@@ -90,28 +84,13 @@ async def analyze_onboarding(input_data: OnboardingInput):
     
     Raises:
         400: Invalid input data
-        429: Rate limit exceeded
         500: Internal server error (LLM failure, parsing error, etc.)
-    
-    Features:
-        - Async LLM calls for better performance
-        - Result caching (1 hour TTL)
-        - Rate limiting (10/min, 100/hour per IP)
     """
     logger.info(f"Received analysis request for user: {input_data.user_id}")
     
-    # Check cache first
-    cached_result = analysis_cache.get(input_data)
-    if cached_result:
-        logger.info(f"Returning cached result for user: {input_data.user_id}")
-        return cached_result
-    
     try:
-        # Process with async agents (faster)
+        # Process with async agents
         result = await process_onboarding_async(input_data)
-        
-        # Store in cache
-        analysis_cache.set(input_data, result)
         
         logger.info(f"Successfully processed request for user: {input_data.user_id}")
         return result
@@ -150,19 +129,6 @@ async def analyze_onboarding(input_data: OnboardingInput):
             status_code=500,
             detail="Internal server error - please try again later"
         )
-
-
-@app.get("/stats")
-async def get_stats():
-    """
-    Get service statistics including cache and rate limiting info
-    """
-    return {
-        "service": "onboarding-multi-agent",
-        "version": "2.0.0",
-        "features": ["async", "caching", "rate-limiting"],
-        "cache": analysis_cache.get_stats()
-    }
 
 
 if __name__ == "__main__":
